@@ -21,8 +21,6 @@ async def generate_pattern():
     if not CSV_SCRIPT_PATH.exists() or not INIT_SCRIPT_PATH.exists():
         return "CSV script not found or init script not found"
     
-    print("INIT_SCRIPT_PATH", INIT_SCRIPT_PATH)
-    
     subprocess.run(["python", str(CSV_SCRIPT_PATH)], capture_output=True, text=True)
     subprocess.run(["python", str(INIT_SCRIPT_PATH), '--pattern', 'all'], capture_output=True, text=True)
     return FileResponse(
