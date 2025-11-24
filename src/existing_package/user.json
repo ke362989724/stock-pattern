@@ -1,0 +1,5 @@
+{
+  "DATA_PATH": "C:\\Users\\user\\Desktop\\trading\\trading_programming_v3\\stock_pattern\\src\\existing_package\\csv",
+  "LOADER": "EODFileLoader",
+  "DEFAULT_TF": "daily"
+}

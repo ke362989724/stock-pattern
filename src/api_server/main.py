@@ -21,13 +21,15 @@ async def generate_pattern():
     if not CSV_SCRIPT_PATH.exists() or not INIT_SCRIPT_PATH.exists():
         return "CSV script not found or init script not found"
     
-    # subprocess.run(["python", str(CSV_SCRIPT_PATH)], capture_output=True, text=True)
-    # subprocess.run(["python", str(INIT_SCRIPT_PATH), '--pattern', 'all'], capture_output=True, text=True)
-    # return FileResponse(
-    #         path=str(ALL_PATTERN_PATH),
-    #         media_type="application/json",
-    #         filename="all-daily.json"   # this is the name the browser will save as
-    # )
+    print("INIT_SCRIPT_PATH", INIT_SCRIPT_PATH)
+    
+    subprocess.run(["python", str(CSV_SCRIPT_PATH)], capture_output=True, text=True)
+    subprocess.run(["python", str(INIT_SCRIPT_PATH), '--pattern', 'all'], capture_output=True, text=True)
+    return FileResponse(
+            path=str(ALL_PATTERN_PATH),
+            media_type="application/json",
+            filename="all-daily.json"   # this is the name the browser will save as
+    )
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

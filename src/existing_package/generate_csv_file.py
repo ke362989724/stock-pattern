@@ -1,9 +1,12 @@
+# src/generate_csv_file.py
 import os
 import psycopg
 import pandas as pd
 from pathlib import Path
 
-
+# ──────────────────────────────────────────────────────────────
+# Always save CSVs inside src/csv/ — regardless of cwd
+# ──────────────────────────────────────────────────────────────
 CURRENT_FILE = Path(__file__).resolve()           # This file's full path
 SRC_DIR = CURRENT_FILE.parent                     # .../stock_pattern/src
 CSV_DIR = SRC_DIR / "csv"                         # .../stock_pattern/src/csv
@@ -13,30 +16,37 @@ CSV_DIR.mkdir(parents=True, exist_ok=True)
 
 print(f"Saving all CSV files to: {CSV_DIR}")
 
+# ──────────────────────────────────────────────────────────────
+# Database queries
+# ──────────────────────────────────────────────────────────────
+ticker_list_query = """
+    SELECT symbol
+    FROM tickers
+    WHERE is_actively_trading = TRUE
+"""
 
-def create_csv_folder():
-    ticker_list_query = """
-        SELECT symbol
-        FROM tickers
-        WHERE is_actively_trading = TRUE
-    """
+ticker_price_query = """
+    SELECT 
+        p.date   AS "Date",
+        p.open   AS "Open",
+        p.high   AS "High",
+        p.low    AS "Low",
+        p.close  AS "Close",
+        p.volume AS "Volume"
+    FROM prices AS p
+    INNER JOIN tickers AS t ON p.ticker_id = t.id
+    WHERE t.symbol = %(ticker)s
+      AND p.date::date >= (CURRENT_DATE - INTERVAL '1 year')
+    ORDER BY p.date ASC
+"""
 
-    ticker_price_query = """
-        SELECT 
-            p.date   AS "Date",
-            p.open   AS "Open",
-            p.high   AS "High",
-            p.low    AS "Low",
-            p.close  AS "Close",
-            p.volume AS "Volume"
-        FROM prices AS p
-        INNER JOIN tickers AS t ON p.ticker_id = t.id
-        WHERE t.symbol = %(ticker)s
-        AND p.date::date >= (CURRENT_DATE - INTERVAL '1 year')
-        ORDER BY p.date ASC
-    """
-
+# ──────────────────────────────────────────────────────────────
+# Main execution
+# ──────────────────────────────────────────────────────────────
+def main():
+    # Connect to PostgreSQL
     conn_string = "postgresql://postgres:123456@localhost:5432/market_data"
+    
     with psycopg.connect(conn_string) as conn:
         print("Fetching list of active tickers...")
         ticker_list_df = pd.read_sql(ticker_list_query, conn)
@@ -68,3 +78,6 @@ def create_csv_folder():
         print(f"   Successful: {successful}")
         print(f"   Failed:     {failed}")
         print(f"   CSV folder: {CSV_DIR}")
+
+if __name__ == "__main__":
+    main()
